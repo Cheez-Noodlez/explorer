@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/x-icon" href="/assets/icon.ico">
     <title>Cheez Noodlez explorer</title>
     <style>
         /* Cheez Noodle Style Base Colors and Fonts */
@@ -561,6 +560,12 @@
             document.getElementById('refreshBtn').addEventListener('click', () => navigate('refresh'));
             document.getElementById('homeBtn').addEventListener('click', () => navigate('home'));
             
+            // New GitHub Button Listener
+            document.getElementById('githubBtn').addEventListener('click', () => {
+                window.open('https://github.com/Cheez-Noodlez/explorer', '_blank');
+                updateStatus('Opening GitHub repository in a new window.');
+            });
+            
             // New Tab Button Listener
             document.getElementById('newTabBtn').addEventListener('click', () => newTab());
 
@@ -620,6 +625,10 @@
             </button>
             <button id="homeBtn" class="ie-button">
                 Home
+            </button>
+            <!-- New GitHub Source Button Added Here -->
+            <button id="githubBtn" class="ie-button" title="View Source Code">
+                GitHub Source
             </button>
         </div>
         
@@ -682,3 +691,4 @@
 
 </body>
 </html>
+
