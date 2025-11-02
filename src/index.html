@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cheez Noodlez explorer</title>
+    <style>
+        /* Cheez Noodle Style Base Colors and Fonts */
+        :root {
+            --win-bg: #FFD9A1; /* Pale Noodle/Creamy background */
+            --win-dark: #D68A00; /* Darker Orange/Brown for shadows (Cooked Noodle) */
+            --win-light: #FFC300; /* Bright Cheese Yellow for highlight */
+            --ie-blue: #FF6700; /* Hot Orange/Red for Title Bar (Paprika/Spice) */
+        }
+
+        body {
+            /* Fullscreen and reset margins */
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #F8F0D3; /* Slightly lighter body background for contrast */
+            font-family: 'Arial', sans-serif;
+            font-size: 11px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* Prevent body scroll */
+            color: black;
+        }
+        
+        /* The main browser window container */
+        .browser-window {
+            width: 100%;
+            height: 100%;
+            background-color: var(--win-bg);
+            /* Classic 3D raised effect using cheese/noodle colors */
+            border-top: 1px solid var(--win-light);
+            border-left: 1px solid var(--win-light);
+            border-right: 1px solid var(--win-dark);
+            border-bottom: 1px solid var(--win-dark);
+            box-shadow: 2px 2px var(--win-dark);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Title Bar */
+        .title-bar {
+            background-color: var(--ie-blue); /* Hot Orange Spice */
+            color: var(--win-light);
+            padding: 2px 5px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            cursor: default;
+        }
+        .title-bar-buttons {
+            display: flex;
+        }
+        .title-bar-btn {
+            background-color: var(--win-bg);
+            border: 1px solid var(--win-light);
+            border-right-color: var(--win-dark);
+            border-bottom-color: var(--win-dark);
+            margin-left: 2px;
+            width: 16px;
+            height: 14px;
+            text-align: center;
+            line-height: 12px;
+            font-family: sans-serif;
+            font-weight: bold;
+            color: black;
+            cursor: pointer;
+        }
+        .title-bar-btn:active {
+            border: 1px solid var(--win-dark);
+            border-right-color: var(--win-light);
+            border-bottom-color: var(--win-light);
+        }
+
+        /* Menu and Navigation Bars */
+        .toolbar {
+            padding: 2px 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--win-dark);
+            background-color: var(--win-bg);
+        }
+
+        .menu-bar {
+            padding: 1px 4px;
+            border-bottom: 1px solid var(--win-light);
+        }
+        .menu-bar span {
+            margin-right: 15px;
+            cursor: default;
+        }
+        .menu-bar span u {
+            text-decoration: none;
+            border-bottom: 1px solid transparent; /* Placeholder for underline effect */
+        }
+        .menu-bar span:hover u {
+             border-bottom: 1px solid black;
+        }
+
+        /* Navigation/Address Bar */
+        .address-bar {
+            padding: 4px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .address-label {
+            white-space: nowrap;
+            line-height: 20px;
+        }
+
+        /* Input Field - Inset Effect */
+        #urlInput {
+            flex-grow: 1;
+            padding: 1px 3px;
+            border: 1px solid var(--win-dark);
+            border-top-color: var(--win-dark);
+            border-left-color: var(--win-dark);
+            background-color: var(--win-light); /* Bright Cheese Yellow background */
+            color: black;
+            font-family: 'Arial', sans-serif;
+            font-size: 11px;
+            outline: none;
+            height: 20px;
+            box-shadow: inset 1px 1px var(--win-dark), inset -1px -1px var(--win-light);
+        }
+
+        /* General Button Style - Raised Effect */
+        .ie-button {
+            padding: 1px 4px;
+            background-color: var(--win-bg);
+            border: 1px solid var(--win-light);
+            border-right-color: var(--win-dark);
+            border-bottom-color: var(--win-dark);
+            cursor: pointer;
+            font-size: 11px;
+            line-height: 18px;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .ie-button:active {
+            border: 1px solid var(--win-dark);
+            border-right-color: var(--win-light);
+            border-bottom-color: var(--win-light);
+            padding: 2px 3px 0 5px; /* Adjust padding to simulate press down */
+        }
+
+        /* Tab Bar Wrapper (holds scrolling tabs and new tab button) */
+        .tab-bar-wrapper {
+            display: flex;
+            align-items: flex-end; /* Align the button and tabs at the bottom */
+            padding: 4px 8px 0;
+            background-color: var(--win-bg);
+            border-bottom: 1px solid var(--win-dark);
+        }
+
+        /* Tab Controls Integration (Scrolling tabs container) */
+        .tab-controls {
+            flex-grow: 1;
+            display: flex;
+            overflow-x: scroll; /* Enable horizontal scrolling for tabs */
+            white-space: nowrap; /* Prevent tabs from wrapping */
+            -ms-overflow-style: none; 
+            scrollbar-width: none; 
+            border-bottom: none; /* Managed by the wrapper */
+            padding: 0;
+        }
+        .tab-controls::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-button {
+            border: 1px solid var(--win-dark);
+            border-bottom: none;
+            margin-right: 2px;
+            padding: 2px 10px;
+            cursor: pointer;
+            background-color: var(--win-bg);
+            /* Classic 3D effect for unselected tab */
+            border-right-color: var(--win-dark);
+            border-bottom-color: var(--win-dark);
+            border-top-color: var(--win-light);
+            border-left-color: var(--win-light);
+            display: flex; /* Enable flex for inner content alignment */
+            align-items: center;
+        }
+
+        .tab-button.active {
+            /* Selected tab lifted (The Cheese Pull Effect) */
+            background-color: var(--win-light);
+            border-bottom: 1px solid var(--win-light); /* Hide border to blend with content */
+            border-top-color: var(--win-dark);
+            border-left-color: var(--win-dark);
+            border-right-color: var(--win-dark);
+            padding-bottom: 3px;
+            color: black;
+        }
+
+        /* Tab Close Button Style */
+        .tab-close-btn {
+            margin-left: 8px;
+            font-size: 14px;
+            font-weight: normal;
+            color: #444;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 2px;
+            /* Make sure the close button is not affected by the main button click */
+            pointer-events: all; 
+        }
+        .tab-close-btn:hover {
+            color: #CC0000; /* Red on hover */
+        }
+        .tab-button.active .tab-close-btn {
+            color: #993300; /* Darker red when active */
+        }
+        
+        .new-tab-btn {
+            height: 25px; /* Match height of a tab */
+            padding: 2px 8px;
+            margin-left: 5px;
+            margin-bottom: 1px; /* Align visually with tabs */
+            white-space: nowrap;
+        }
+
+        /* Content and Iframe */
+        .content-container {
+            flex-grow: 1;
+            padding: 5px;
+            background-color: var(--win-bg); /* Creamy Noodle base */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .iframe-container {
+            flex-grow: 1;
+            background-color: var(--win-light);
+            /* Inset look for the actual frame area */
+            border: 1px solid var(--win-dark);
+            border-top-color: var(--win-dark);
+            border-left-color: var(--win-dark);
+            box-shadow: inset 1px 1px var(--win-dark), inset -1px -1px var(--win-light);
+            overflow: hidden;
+        }
+
+        #contentFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            height: 18px;
+            background-color: var(--win-bg);
+            padding: 1px 4px;
+            border-top: 1px solid var(--win-dark);
+            /* Inset look for the status bar */
+            border-left: 1px solid var(--win-light);
+            border-top-color: var(--win-dark);
+            border-right: 1px solid var(--win-dark);
+            border-bottom: 1px solid var(--win-dark);
+            display: flex;
+            align-items: center;
+        }
+        #statusText {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* Message Box */
+        .message-box {
+            background-color: #FFE033; /* Dedicated warning yellow */
+            border: 1px dashed #D68A00;
+            padding: 5px;
+            margin-bottom: 5px;
+            color: black;
+            text-align: center;
+            font-size: 10px;
+        }
+        
+        .message-box .warning-text {
+            color: #CC4400; /* Dark Reddish Orange for warning text */
+            font-weight: bold;
+        }
+
+    </style>
+    <script>
+        let activeTab = 0; // The ID of the currently active tab
+        let tabIdCounter = 1; // Used to assign unique IDs to new tabs
+        const tabUrls = {}; // Stores {tabId: url}
+        
+        // Define the custom home URL
+        const CUSTOM_HOME_URL = 'https://cheez-noodlez.github.io/search';
+
+        /**
+         * Parses a URL to get a readable hostname label.
+         * @param {string} url The full URL string.
+         * @returns {string} The short label (e.g., 'cheez-noodlez.github.io' or 'New Noodle').
+         */
+        function getLabelFromUrl(url) {
+            if (url === 'about:blank' || !url) {
+                return 'New Noodle';
+            }
+            try {
+                // Ensure a protocol exists for URL parsing
+                if (!url.match(/^[a-zA-Z]+:\/\//)) {
+                    url = 'http://' + url;
+                }
+                const hostname = new URL(url).hostname;
+                // Remove 'www.' prefix for cleaner labels, limit length
+                let label = hostname.replace('www.', '');
+                return label.length > 20 ? label.substring(0, 17) + '...' : label;
+            } catch (e) {
+                return 'Invalid Noodle';
+            }
+        }
+        
+        /**
+         * Updates the status bar text.
+         * @param {string} text The message to display.
+         */
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
+
+        /**
+         * Closes a specific tab.
+         * @param {number} tabId The ID of the tab to close.
+         */
+        function closeTab(tabId) {
+            const tabElement = document.getElementById(`tab-${tabId}`);
+            if (!tabElement) return;
+
+            const wasActive = tabId === activeTab;
+            
+            // 1. Remove from DOM and internal storage
+            tabElement.remove();
+            delete tabUrls[tabId];
+
+            const tabIds = Object.keys(tabUrls).map(Number);
+            
+            if (tabIds.length === 0) {
+                // 2. If no tabs are left, create a new default one
+                newTab(null, true);
+                switchTab(tabIdCounter - 1); // Switch to the newly created tab ID
+                updateStatus('Closed last tab. Opened a new Noodle Tab.');
+            } else if (wasActive) {
+                // 3. If the closed tab was active, switch to the first remaining tab.
+                const newActiveTabId = tabIds[0]; 
+                switchTab(newActiveTabId);
+                updateStatus(`Closed Tab ${tabId}. Switched to Tab ${newActiveTabId}.`);
+
+            } else {
+                 updateStatus(`Closed Tab ${tabId}. Active tab remains Tab ${activeTab}.`);
+            }
+        }
+
+        /**
+         * Creates a new tab, appends it to the container, and switches to it.
+         * @param {string} [url='about:blank'] The initial URL for the new tab.
+         * @param {boolean} [initial=false] Flag for the very first tab creation.
+         */
+        function newTab(url = 'about:blank', initial = false) {
+            // If it's the initial tab, use the custom home URL
+            if (initial) {
+                url = CUSTOM_HOME_URL;
+            }
+
+            const tabId = tabIdCounter++;
+            tabUrls[tabId] = url;
+
+            const tabControls = document.getElementById('tabControls');
+            const button = document.createElement('button');
+            button.id = `tab-${tabId}`;
+            button.className = 'tab-button';
+            button.onclick = () => switchTab(tabId);
+
+            const labelSpan = document.createElement('span');
+            labelSpan.id = `tab-${tabId}-label`;
+            labelSpan.textContent = getLabelFromUrl(url);
+
+            const closeBtn = document.createElement('span');
+            closeBtn.className = 'tab-close-btn';
+            closeBtn.innerHTML = '&times;'; // '×' symbol
+            closeBtn.title = 'Close Tab';
+            
+            // Stop propagation so clicking the 'x' closes the tab and doesn't trigger switchTab
+            closeBtn.onclick = (e) => {
+                e.stopPropagation(); 
+                closeTab(tabId);
+            };
+
+            button.appendChild(labelSpan);
+            button.appendChild(closeBtn);
+            tabControls.appendChild(button);
+            
+            if (!initial) {
+                switchTab(tabId);
+                updateStatus(`Opened a new Noodle Tab (Tab ${tabId}).`);
+            }
+            return tabId;
+        }
+
+
+        /**
+         * Switches the active tab and loads its stored URL.
+         * @param {number} tabId The ID of the tab to switch to.
+         */
+        function switchTab(tabId) {
+            // Deactivate old tab
+            const oldTabElement = document.getElementById(`tab-${activeTab}`);
+            if (oldTabElement) {
+                oldTabElement.classList.remove('active');
+            }
+            
+            // Set the new active tab
+            activeTab = tabId;
+
+            // Activate new tab
+            const newTabElement = document.getElementById(`tab-${activeTab}`);
+            if (newTabElement) {
+                newTabElement.classList.add('active');
+                // Scroll the new active tab into view if needed
+                newTabElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+
+            // Load the stored URL for the new active tab
+            const url = tabUrls[tabId];
+            const iframe = document.getElementById('contentFrame');
+            
+            iframe.src = url;
+            
+            // Update the input field and title bar
+            document.getElementById('urlInput').value = (url === 'about:blank') ? '' : url;
+            document.getElementById('windowTitle').textContent = `${getLabelFromUrl(url)} - Cheez Noodlez explorer`;
+            updateStatus(`Switched to Noodle Tab ${tabId}.`);
+
+            // Clear any messages
+            document.getElementById('messageBox').innerHTML = '';
+        }
+
+        /**
+         * Handles form submission: saves the new URL to the active tab and loads it.
+         * @param {Event} event The form submission event.
+         */
+        function loadUrl(event) {
+            // Prevent the default form submission behavior (which would refresh the page)
+            event.preventDefault();
+            
+            if (activeTab === 0) {
+                 updateStatus('ERROR: No active tab found to load URL.');
+                 return;
+            }
+
+            const urlInput = document.getElementById('urlInput');
+            let url = urlInput.value.trim();
+            const messageBox = document.getElementById('messageBox');
+            
+            if (url && !url.match(/^[a-zA-Z]+:\/\//)) {
+                url = 'http://' + url;
+            }
+
+            if (url) {
+                // Save URL to the currently active tab
+                tabUrls[activeTab] = url;
+                
+                // Load URL into iframe
+                document.getElementById('contentFrame').src = url;
+                
+                // Update tab label and title bar
+                document.getElementById(`tab-${activeTab}-label`).textContent = getLabelFromUrl(url);
+                document.getElementById('windowTitle').textContent = `${getLabelFromUrl(url)} - Cheez Noodlez explorer`;
+                
+                updateStatus(`Loading URL: ${url}`);
+                messageBox.innerHTML = ''; // Clear any previous messages
+            } else {
+                messageBox.innerHTML = '<p class="warning-text">ERROR: NEED MORE NOODLES (INVALID URL).</p>';
+                updateStatus('URL input failed. Please check the address.');
+            }
+        }
+
+        /**
+         * Simulates classic browser navigation.
+         * @param {string} action The navigation action ('back', 'forward', 'refresh', 'home').
+         */
+        function navigate(action) {
+            const iframe = document.getElementById('contentFrame');
+            
+            // Safety check for active tab
+            if (activeTab === 0 || !tabUrls[activeTab]) {
+                updateStatus('ERROR: No active tab found to navigate.');
+                return;
+            }
+
+            switch(action) {
+                case 'back':
+                    // FIX: Direct access to history is blocked by SOP for cross-origin content.
+                    updateStatus('Navigation "Back" blocked by Cross-Origin Policy for security.');
+                    break;
+                case 'forward':
+                    // FIX: Direct access to history is blocked by SOP for cross-origin content.
+                    updateStatus('Navigation "Forward" blocked by Cross-Origin Policy for security.');
+                    break;
+                case 'refresh':
+                    // We force a reload by re-assigning the current tab's saved URL to the iframe's src.
+                    iframe.src = tabUrls[activeTab]; 
+                    updateStatus('Refreshing current noodle content...');
+                    break;
+                case 'home':
+                    // Load the default home URL.
+                    const homeUrl = CUSTOM_HOME_URL;
+                    iframe.src = homeUrl;
+                    
+                    // Update current tab's state to home URL
+                    tabUrls[activeTab] = homeUrl;
+                    document.getElementById('urlInput').value = homeUrl;
+                    document.getElementById(`tab-${activeTab}-label`).textContent = getLabelFromUrl(homeUrl);
+                    document.getElementById('windowTitle').textContent = `${getLabelFromUrl(homeUrl)} - Cheez Noodlez explorer`;
+                    
+                    updateStatus(`Returning to home noodle: ${getLabelFromUrl(homeUrl)}`);
+                    break;
+            }
+        }
+
+        /**
+         * Attaches listeners to the menu and title bar buttons for status updates.
+         * @param {string} id The element ID.
+         * @param {string} message The status message to display.
+         */
+        function attachStatusListener(id, message) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('click', () => updateStatus(message));
+            }
+        }
+
+        // Initialize the app on load to attach event listeners and set initial state
+        window.onload = function() {
+            
+            // Address Bar Form Listener
+            const form = document.getElementById('urlForm');
+            form.addEventListener('submit', loadUrl);
+            
+            // Toolbar Button Listeners (Navigation)
+            document.getElementById('backBtn').addEventListener('click', () => navigate('back'));
+            document.getElementById('forwardBtn').addEventListener('click', () => navigate('forward'));
+            document.getElementById('refreshBtn').addEventListener('click', () => navigate('refresh'));
+            document.getElementById('homeBtn').addEventListener('click', () => navigate('home'));
+            
+            // New Tab Button Listener
+            document.getElementById('newTabBtn').addEventListener('click', () => newTab());
+
+
+            // Status Bar Listeners (Aesthetic Buttons)
+            attachStatusListener('fileMenu', 'Opening File Menu...');
+            attachStatusListener('editMenu', 'Opening Edit Menu...');
+            attachStatusListener('viewMenu', 'Opening View Menu...');
+            attachStatusListener('favoritesMenu', 'Retrieving Saved Recipes...');
+            attachStatusListener('toolsMenu', 'Opening Tools Menu...');
+            attachStatusListener('helpMenu', 'Requesting Extra Cheese...');
+            attachStatusListener('minBtn', 'Minimizing Window (Not Implemented)');
+            attachStatusListener('maxBtn', 'Maximizing Window (Not Implemented)');
+            attachStatusListener('closeBtn', 'Closing Browser (Not Implemented)');
+            
+            // Create the initial tab
+            newTab(null, true); // Pass null for URL as it is handled by the initial flag
+            switchTab(1);
+        };
+    </script>
+</head>
+<body>
+
+    <!-- Main Browser Window Container -->
+    <div class="browser-window">
+        
+        <!-- Classic IE Title Bar (Spicy Orange) -->
+        <div class="title-bar">
+            <span id="windowTitle">Cheez Noodlez explorer</span>
+            <div class="title-bar-buttons">
+                <div id="minBtn" class="title-bar-btn">-</div>
+                <div id="maxBtn" class="title-bar-btn">☐</div>
+                <div id="closeBtn" class="title-bar-btn">X</div>
+            </div>
+        </div>
+
+        <!-- Menu Bar (Still Noodly) -->
+        <div class="menu-bar">
+            <span id="fileMenu"><u>F</u>ile</span>
+            <span id="editMenu"><u>E</u>dit</span>
+            <span id="viewMenu"><u>V</u>iew</span>
+            <span id="favoritesMenu"><u>F</u>avorites</span>
+            <span id="toolsMenu"><u>T</u>ools</span>
+            <span id="helpMenu"><u>H</u>elp</span>
+        </div>
+
+        <!-- Navigation Bar (Address Bar) -->
+        <div class="toolbar">
+            <button id="backBtn" class="ie-button">
+                &lt; Back
+            </button>
+            <button id="forwardBtn" class="ie-button">
+                &gt; Forward
+            </button>
+            <button id="refreshBtn" class="ie-button">
+                Refresh
+            </button>
+            <button id="homeBtn" class="ie-button">
+                Home
+            </button>
+        </div>
+        
+        <!-- Address Form -->
+        <form id="urlForm" class="address-bar">
+            <span class="address-label">Address:</span>
+            <input 
+                type="url" 
+                id="urlInput" 
+                placeholder="https://www.tasty-example.com"
+                required
+            >
+            <button 
+                type="submit"
+                class="ie-button"
+            >
+                Go
+            </button>
+        </form>
+
+        <!-- Tab Bar Wrapper (Tabs and New Tab Button) -->
+        <div class="tab-bar-wrapper">
+            <!-- Tab Controls (Scrolling tabs container) -->
+            <div id="tabControls" class="tab-controls">
+                <!-- Tabs will be dynamically generated here by JavaScript -->
+            </div>
+            <!-- New Tab Button -->
+            <button id="newTabBtn" class="ie-button new-tab-btn">
+                + New Noodle
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-container">
+            
+            <!-- Message Box for Feedback (Cheesy Warning Label) -->
+            <div id="messageBox" class="message-box">
+                <p class="warning-text">!! CONNECTION STATUS WARNING: GLUTEN ALLERGY !!</p>
+                <p>MANY MODERN SITES MAY FAIL TO LOAD DUE TO FRAME SECURITY RESTRICTIONS.</p>
+            </div>
+
+            <!-- IFrame Container (The Bowl) -->
+            <div class="iframe-container">
+                <iframe 
+                    id="contentFrame" 
+                    title="Website Content"
+                    frameborder="0"
+                >
+                </iframe>
+            </div>
+
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <span id="statusText">Ready to serve.</span>
+        </div>
+
+    </div>
+
+</body>
+</html>
