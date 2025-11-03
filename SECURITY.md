@@ -3,4 +3,4 @@
 
 ## Reporting a Vulnerability
 
-see SECURITY.md
+see security/SECURITY.md
